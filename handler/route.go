@@ -1,11 +1,22 @@
 package handler
 
-import "net/http"
+import (
+	"github.com/JairoCC/go-rest-api/middleware"
+	"github.com/labstack/echo/v4"
+)
 
-func RoutePerson(mux *http.ServeMux, storage Storage) {
+func RoutePerson(e *echo.Echo, storage Storage) {
 	h := newPerson(storage)
-	mux.HandleFunc("/v1/persons/create", h.create)
-	mux.HandleFunc("/v1/persons/update", h.update)
-	mux.HandleFunc("/v1/persons/get-all", h.getAll)
-	mux.HandleFunc("/v1/persons/delete", h.delete)
+	person := e.Group("v1/persons")
+	person.Use(middleware.Authentication)
+	person.POST("", h.create)
+	person.PUT("/:id", h.update)
+	person.DELETE("/:id", h.delete)
+	person.GET("", h.getAll)
+	person.GET("/:id", h.getByID)
+}
+
+func RouteLogin(e *echo.Echo, storage Storage) {
+	h := newLogin(storage)
+	e.POST("/v1/login", h.login)
 }
